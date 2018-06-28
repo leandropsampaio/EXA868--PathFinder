@@ -6,4 +6,6 @@ math.random(); math.random(); math.random()
 
 local mainController = MainController:new()
 
-mainController.execute()
+while true do
+  mainController.execute()
+end

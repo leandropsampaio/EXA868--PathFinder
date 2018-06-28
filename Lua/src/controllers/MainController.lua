@@ -38,13 +38,15 @@ function MainController:new()
 
       for key, genome in ipairs(organism.getGenome()) do
         if organism.getState() == self.stateDecoder.alive then
+          io.write(genome .. " - ")
           local position = organism.getPosition()
           local hasMoved = self.labyrinth.move(self.genomeDecoder[genome], position)
           if hasMoved then
-            organism.setFitness(organism.getFitness() - 1)
+            organism.setFitness(organism.getFitness() + 1)
             organism.setPosition(hasMoved)
             if self.labyrinth.isAtFinal(hasMoved) then
               print("Finished")
+              organism.setFitness(organism.getFitness() + 10)
               organism.setState(self.stateDecoder.finished)
             end
           else
@@ -53,9 +55,10 @@ function MainController:new()
           end
         end
       end
+
       local beginPosition = self.labyrinth.getBeginPosition()
-      print(organism.getPosition().x, organism.getPosition().y)
       organism.setPosition({x = beginPosition.x, y = beginPosition.y})
+      io.write("\n")
     end
   end
 
@@ -68,9 +71,9 @@ function MainController:new()
     move(organisms)
 
     local mom, dad = self.controllerOrganism.selectBestOnes()
-    self.controllerOrganism.crossover(mom, dad, 0.02)
+    self.controllerOrganism.crossover(mom, dad, 0.002)
 
-    if(mom.getGeneration() % 11 ~= 0) then
+    if(mom.getGeneration() % 11 == 0) then
       self.controllerOrganism.saveGenomes("LastsGenomes.json")
     end
 

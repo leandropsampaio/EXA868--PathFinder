@@ -28,34 +28,31 @@ function OrganismController:new(organismConstructor, initialPosition)
       return false
     end
 
-    local firstRandom, secondRandom
+    local cutPoint, mutationRandom
     local children = {}
     for indexOfChildren = 1, self.genomeSize, 1 do
       local newChildren = organismConstructor:new(self.genomeSize)
-      for index = 1, self.genomeSize, 1 do --parents code
-        firstRandom = math.random()
-        local selectedOrganism = nil
-        if (firstRandom <= 0.5) then
-          selectedOrganism = MomOrganism
-        else
-          selectedOrganism = DadOrganism
-        end
-        newChildren.setGenomeInIndex(index, selectedOrganism.getGenomeInIndex(index) + 0)
-        secondRandom = math.random()
-        if (secondRandom <= mutationProbability) then --mutations (mutationProbability)
-          newChildren.setGenomeInIndex(index, math.random(0, 3))
-        end
+      newChildren.setPosition({x = initialPosition.x, y = initialPosition.y})
 
+      cutPoint = math.random(1, self.genomeSize - 1)
+      for index = 1, cutPoint, 1 do
+        newChildren.setGenomeInIndex(index, MomOrganism.getGenomeInIndex(index))
+      end
+
+      for index = cutPoint + 1, self.genomeSize, 1 do
+        newChildren.setGenomeInIndex(index, DadOrganism.getGenomeInIndex(index))
+      end
+
+      for genomeIndex = 1, self.genomeSize ,1 do
+        if (math.random() <= mutationProbability) then --mutations (mutationProbability)
+          newChildren.setGenomeInIndex(genomeIndex, math.random(0, 3))
+        end
       end --for end
+
       newChildren.setGeneration(MomOrganism.getGeneration() + 1)
       table.insert(children, newChildren)
     end --end of children for
-    MomOrganism.setGeneration(MomOrganism.getGeneration() + 1)
-    table.insert(children, MomOrganism)
-    DadOrganism.setGeneration(DadOrganism.getGeneration() + 1)
-    table.insert(children, DadOrganism)
 
-    MomOrganism.reset(); DadOrganism.reset()
     self.organisms = children
     return children
   end
