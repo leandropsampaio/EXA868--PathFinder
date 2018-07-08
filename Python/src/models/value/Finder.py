@@ -24,3 +24,7 @@ class Finder(Organism):
 
     def setPosition(self, position):
         self.position = position
+
+    def compareTo(self, to_compare):
+        if to_compare:
+            return self.last - to_compare.getLast()

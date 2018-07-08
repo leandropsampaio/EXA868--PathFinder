@@ -1,6 +1,20 @@
 from controllers.MainController import MainController
+import matplotlib.pyplot as plt
 
 mainController = MainController()
 
-while True:
+maxGenerations = 10
+
+while mainController.finished_generations() <= maxGenerations:
     mainController.execute()
+
+plt.plot(mainController.get_best_fitness(),
+         label='Melhores Fitness')  # LISTA DE FITNESS DO MELHOR INDIVIDUO DE CADA GERAÇÃO
+plt.plot(mainController.get_generations_fitness_average(),
+         label='Fitness médio da população')  # LISTA DE FITNESS MÉDIO DA POPULAÇÃO DE CADA GERAÇÃO
+
+plt.xlabel('Gerações')
+plt.ylabel('Fitness')
+plt.title("Solução 1")
+plt.figlegend(('Melhores Fitness', 'Fitness médio da população'))
+plt.show()

@@ -8,49 +8,81 @@ from models.value.Labyrinth import Labyrinth
 class MainController:
 
     def __init__(self):
-        self.labyrinth = Labyrinth("config.json")
-        self.labyrinth.loadLabyrinth("labyrinth.la")
-        self.controllerOrganism = OrganismController(Finder, self.labyrinth.getBeginPosition())
-        self.genomeDecoder = ("UP", "RIGHT", "DOWN", "LEFT")
-        self.stateDecoder = {'alive': 0, 'dead': -1, 'finished': 1}
+        self.__labyrinth = Labyrinth("../config.json")
+        self.__labyrinth.loadLabyrinth("../labyrinth.la")
+        self.__controllerOrganism = OrganismController(Finder, self.__labyrinth.getBeginPosition())
+        self.__genomeDecoder = ("UP", "RIGHT", "DOWN", "LEFT")
+        self.__stateDecoder = {'alive': 0, 'dead': -1, 'finished': 1}
+        self.__ending = self.__labyrinth.getEndingPosition()
+        self.__have_finished = False
+        self.__generations_finished = 0
 
-    def calculateFitness(self, organism):
-        xDiference = organism.getX()
-        xDiference = xDiference - self.objectiveCoordinates['x']
-        yDiference = organism.getY()
-        yDiference = yDiference - self.objectiveCoordinates['y']
-        return math.sqrt(math.pow(xDiference, 2) + math.pow(yDiference, 2))
+        self.__generations_fitness_average = []
+        self.__best_fitness = []
+
+    def finished_generations(self):
+        return self.__generations_finished
+
+    def get_generations_fitness_average(self):
+        return self.__generations_fitness_average
+
+    def get_best_fitness(self):
+        return self.__best_fitness
+
+    def __calculate_fitness(self, organism):
+        x_diference = organism.getPosition()['x']
+        x_diference = x_diference - self.__ending['x']
+        y_diference = organism.getPosition()['y']
+        y_diference = y_diference - self.__ending['y']
+        # return math.sqrt(math.pow(x_diference, 2) + math.pow(y_diference, 2))
+        return math.fabs(x_diference) + math.fabs(y_diference)
 
     def move(self, organisms):
-        for index, organism in organisms:
+        for organism in organisms:
 
-            for key, genome in organism.getGenome():
-                if organism.getState() == self.stateDecoder['alive']:
-                    print(str(genome) + " - ")
+            count = 0
+            for genome in organism.getGenome():
+                if organism.getState() == self.__stateDecoder['alive']:
                     position = organism.getPosition()
-                    has_moved = self.labyrinth.move(self.genomeDecoder[genome], position)
-                    if has_moved:  # Caso não tenha batido na parede
-                        organism.setFitness(organism.getFitness() + 1)
+                    has_moved = self.__labyrinth.move(self.__genomeDecoder[genome], position)
+                    if has_moved:
+                        organism.updateFitness(1)
                         organism.setPosition(has_moved)
-                        if self.labyrinth.isAtFinal(has_moved):
-                            print("Finished")
-                            organism.setFitness(organism.getFitness() + 10)
-                            organism.setState(self.stateDecoder['finished'])
-                    else:  # Se bateu na parede
-                        organism.setFitness(organism.getFitness() - 2)
-                        organism.setState(self.stateDecoder['dead'])
+                        if self.__labyrinth.isAtFinal(has_moved):
+                            organism.updateFitness(100)
+                            organism.setState(self.__stateDecoder['finished'])
+                            organism.setLast(count)
+                            print("Generation: " + str(organism.getGeneration()), organism.getGenome())
+                            self.__have_finished = True
+                    else:
+                        organism.updateFitness(-5)
+                        # organism.setState(self.stateDecoder['dead'])
+                count = count + 1
 
-            begin_position = self.labyrinth.getBeginPosition()
+            if organism.getState() == self.__stateDecoder['dead']:
+                organism.updateFitness(-10)
+            organism.updateFitness(-10 * self.__calculate_fitness(organism))
+
+            # print(organism.getPosition())
+            begin_position = self.__labyrinth.getBeginPosition()
             organism.setPosition({'x': begin_position['x'], 'y': begin_position['y']})
 
     def execute(self):
-        organisms = self.controllerOrganism.getOrganisms()
+        organisms = self.__controllerOrganism.getOrganisms()
         if not organisms:
             return None
         self.move(organisms)
 
-        mom, dad = self.controllerOrganism.selectBestOnes()
-        self.controllerOrganism.crossover(mom, dad, 0.002)
+        if self.__have_finished:
+            self.__generations_finished = self.__generations_finished + 1
+            self.__have_finished = False
+
+        self.__generations_fitness_average.append(self.__controllerOrganism.average_fitness())
+
+        mom, dad = self.__controllerOrganism.selectBestOnes()
+        self.__best_fitness.append(mom.getFitness())
+
+        self.__controllerOrganism.crossover(mom, dad, 0.05)
 
         if mom.getGeneration() % 11 == 0:
-            self.controllerOrganism.saveGenomes("LastsGenomes.json")
+            self.__controllerOrganism.saveGenomes("../LastsGenomes.json")
