@@ -60,3 +60,23 @@ class Labyrinth:
         if position:
             if self.validPosition(position['x'], position['y']):
                 return self.matrix[position['y']][position['x']]['class'] == "ending"
+
+    def get_robot_in_labyrinth(self, robot_genome, genome_decoder):
+        allPath = []
+        currentPosition = {'x': 1, 'y': 1}
+        labyrinthString = ""
+        for genome in robot_genome:
+            # Here will create labyrinth string
+            for line in range(len(self.matrix)):
+                for column in range(len(self.matrix[line])):
+                    if line == currentPosition['y'] and column == currentPosition['x']:
+                        labyrinthString = labyrinthString + "R"
+                    else:
+                        labyrinthString = labyrinthString + self.matrix[line][column]['character']
+                labyrinthString = labyrinthString + "\n"
+            allPath.append(labyrinthString)
+            newPosition = self.move(genome_decoder[genome], currentPosition)
+            if newPosition:
+                currentPosition = newPosition
+            labyrinthString = ""
+        return allPath

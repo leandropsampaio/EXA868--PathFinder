@@ -60,13 +60,15 @@ class OrganismController:
         self.organisms = children
         return children
 
-    def getSmallerPath(self, compare_to=None, amount=30):
+    def getSmallerPath(self, compare_to=None, amount=30, list_to_order=None):
+        if not list_to_order:
+            list_to_order = self.organisms
         if not compare_to:
             compare_to = self.organisms[0].compareTo
-        self.organisms.sort(key=compare_to, reverse=True)
-        if self.organisms[1].getLast() < 99999:
-            return self.organisms[:amount]
-        return self.organisms
+        list_to_order.sort(key=compare_to, reverse=True)
+        if list_to_order[1].getLast() < 99999:
+            return list_to_order[:amount]
+        return list_to_order
 
     def selectBestOnes(self):
         max_scores = [0, 0]

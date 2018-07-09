@@ -19,6 +19,7 @@ class MainController:
 
         self.__generations_fitness_average = []
         self.__best_fitness = []
+        self.__best_organisms = []
 
     def finished_generations(self):
         return self.__generations_finished
@@ -28,6 +29,15 @@ class MainController:
 
     def get_best_fitness(self):
         return self.__best_fitness
+
+    def get_genome_decoder(self):
+        return self.__genomeDecoder
+
+    def get_labyrinth(self):
+        return self.__labyrinth
+
+    def get_best_one(self):
+        return self.__controllerOrganism.getSmallerPath(list_to_order=self.__best_organisms)[0]
 
     def __calculate_fitness(self, organism):
         x_diference = organism.getPosition()['x']
@@ -81,6 +91,7 @@ class MainController:
 
         mom, dad = self.__controllerOrganism.selectBestOnes()
         self.__best_fitness.append(mom.getFitness())
+        self.__best_organisms.append(mom)
 
         self.__controllerOrganism.crossover(mom, dad, 0.05)
 

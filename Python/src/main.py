@@ -18,3 +18,8 @@ plt.ylabel('Fitness')
 plt.title("Solução 1")
 plt.figlegend(('Melhores Fitness', 'Fitness médio da população'))
 plt.show()
+
+path = mainController.get_labyrinth().get_robot_in_labyrinth(mainController.get_best_one().getGenome(),
+                                                             mainController.get_genome_decoder())
+for currentPosition in path:
+    print(currentPosition)
